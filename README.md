@@ -12,3 +12,9 @@ Can also piece together incomplete license plate using multiple images of it.
 - [ ] Blurring out license plates [Ch8]
 - [ ] Thresholding [Ch9]
 - [ ] Edge detection [Ch10]
+
+
+# Sources:
+-https://docs.opencv.org/3.4/d5/d6f/tutorial_feature_flann_matcher.html (feature mapping using hessian function)
+-
+
