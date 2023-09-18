@@ -11,4 +11,4 @@ Can also piece together incomplete license plate using multiple images of it.
 - [ ] Splitting color channels [Ch6]
 - [ ] Blurring out license plates [Ch8]
 - [ ] Thresholding [Ch9]
-- [ ] Edge detecction [Ch10]
+- [ ] Edge detection [Ch10]
