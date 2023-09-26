@@ -5,16 +5,19 @@ Detects white California license plates in different images. Can then crop/upsca
 Can also piece together incomplete license plate using multiple images of it.
 
 # Checklist
-- [ ] Loading images [Ch3]
-- [ ] Drawing (lines between images) [Ch5]
+- [x] Loading images [Ch3]
+- [x] Save image as png [Ch3]
+- [x] Drawing (rectangle around plate) [Ch5]
 - [ ] Skewing and cropping images [Ch6]
 - [ ] Splitting color channels [Ch6]
-- [ ] Blurring out license plates [Ch8]
-- [ ] Thresholding [Ch9]
-- [ ] Edge detection [Ch10]
+- [x] Blurring out license plates [Ch8]
+- [x] Thresholding [Ch9]
+- [x] Edge detection [Ch10]
 
 
 # Sources:
--https://docs.opencv.org/3.4/d5/d6f/tutorial_feature_flann_matcher.html (feature mapping using hessian function)
--
+- https://docs.opencv.org/3.4/d5/d6f/tutorial_feature_flann_matcher.html
+    - feature mapping using hessian function
+- https://pyimagesearch.com/2015/11/30/detecting-machine-readable-zones-in-passport-images/
+    - Detecting text rectangles
 
