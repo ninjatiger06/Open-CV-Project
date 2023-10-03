@@ -20,16 +20,19 @@ def checkPNG(image, imgPath):
 	# Checks to see image isn't already png
 	if imgPath[len(imgPath)-4:] != ".png":
 		if imgPath[len(imgPath)-4:] == "webp":
-			# imgName = imgPath[len(imgPath)-4:]
+			# imgName = imgPath[:len(imgPath)-4]
 			imgPath = imgPath[:len(imgPath)-4] + "png"
 		else:
-			# imgName = imgPath[len(imgPath)-3:]
+			# imgName = imgPath[:len(imgPath)-3]
 			imgPath = imgPath[:len(imgPath)-3] + "png"
+		
 		# Re-saves image as png
 		cv2.imwrite(imgPath, image)
-		image = cv2.imread(imgPath)
+		pngImage = cv2.imread(imgPath)
+	else:
+		pngImage = image
 
-	return image
+	return pngImage
 
 def loadImage():
 	"""
