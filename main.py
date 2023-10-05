@@ -19,7 +19,7 @@ def checkPNG(image, imgPath):
 	"""
 	# Checks to see image isn't already png
 	if imgPath[len(imgPath)-4:] != ".png":
-		if imgPath[len(imgPath)-4:] == "webp":
+		if imgPath[len(imgPath)-4:] == "webp" or imgPath[len(imgPath)-4:] == "jpeg":
 			# imgName = imgPath[:len(imgPath)-4]
 			imgPath = imgPath[:len(imgPath)-4] + "png"
 		else:
@@ -203,12 +203,12 @@ def main():
 	cv2.waitKey(0)
 
 	blurred = blurImage(image, boxCoords)
-	# cv2.imwrite("./images/blurredPlate.png", blurred)
+	cv2.imwrite("./output/blurredPlate.png", blurred)
 
 	cv2.waitKey(0)
 
 	swappedPlates = swapPlates(image, im2, boxCoords, boxCoords2)
-	# cv2.imwrite("./images/swappedPlates.png", swappedPlates)
+	cv2.imwrite("./output/swappedPlates.png", swappedPlates)
 
 	cv2.waitKey(0)
 
