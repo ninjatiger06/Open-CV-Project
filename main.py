@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 import cv2
 import imutils
+import matplotlib.pyplot as plt
 
 """
 	Description: Program identifies car license plates from images and can blur
@@ -43,6 +44,8 @@ def loadImage():
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-i", "--image", required=True, help="Path to Image")
 	ap.add_argument("-im2", "--im2", required=True, help="Path to image 2")
+	ap.add_argument("-im3", "--im3", required=True, help="Path to Image 3")
+	ap.add_argument("-im4", "--im4", required=True, help="Path to Image 4")
 	args = vars(ap.parse_args())
 
 	image = cv2.imread(args["image"])
@@ -53,7 +56,16 @@ def loadImage():
 	im2Path = args["im2"]
 	im2 = checkPNG(im2, im2Path)
 
-	return image, im2
+	im3 = cv2.imread(args["im3"], )
+	im3Path = args["im3"]
+	im3 = checkPNG(im3, im3Path)
+
+	im4 = cv2.imread(args["im4"])
+	im4Path = args["im4"]
+	im4 = checkPNG(im4, im4Path)
+
+	return image, im2, im3, im4
+
 
 def detectEdge(image) -> None:
 	"""
@@ -148,37 +160,70 @@ def swapPlates(image, im2, boxCoords, boxCoords2):
 
 def featureMapping(image1, image2):
 
+	
+	#-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
 	minHessian = 400
 	detector = cv2.xfeatures2d_SURF.create(hessianThreshold=minHessian)
-	keypoints1, descriptors1 = detector.detectandCompute(image1, None)
-	keypoints2, descriptors2 = detector.detectandCompute(image2, None)
-
-
-	matcher = cv2.DescriptionMatcher_create(cv2.DescriptionMatcher_FLANBASED)
+	keypoints1, descriptors1 = detector.detectAndCompute(img1, None)
+	keypoints2, descriptors2 = detector.detectAndCompute(img2, None)
+	#-- Step 2: Matching descriptor vectors with a FLANN based matcher
+	# Since SURF is a floating-point descriptor NORM_L2 is used
+	matcher = cv2.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
 	knn_matches = matcher.knnMatch(descriptors1, descriptors2, 2)
-
+	#-- Filter matches using the Lowe's ratio test
 	ratio_thresh = 0.7
-	goodm = []
+	good_matches = []
+	for m,n in knn_matches:
+ 		if m.distance < ratio_thresh * n.distance:
+ 			good_matches.append(m)
+	#-- Draw matches
 
-	for m, n in knn_matches:
-		if m.distance < ratio_thresh * n.distance:
-			goodm.append(m)
-	img_matches = np.empty((max(image1.shape[0], image2.shape[0]), image1.shape[1]+image2.shape[1], 3), dtype=np.uint8)
-	cv2.drawMatches(image1, keypoints1, image2, keypoints2, goodm, img_matches, flags = cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+	img_matches = np.empty((max(img1.shape[0], img2.shape[0]), img1.shape[1]+img2.shape[1], 3), dtype=np.uint8)
+	cv2.drawMatches(img1, keypoints1, img2, keypoints2, good_matches, img_matches, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+	#-- Show detected matches
+	cv2.imshow('Good Matches', img_matches)
 
-	cv2.imshow("Good Matches", img_matches)
-	
-
+def siftMatching(img1, img2):
+	# Initiate SIFT detector
+	sift = cv2.SIFT_create()
+	# find the keypoints and descriptors with SIFT
+	kp1, des1 = sift.detectAndCompute(img1,None)
+	kp2, des2 = sift.detectAndCompute(img2,None)
+	# FLANN parameters
+	FLANN_INDEX_KDTREE = 1
+	index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+	search_params = dict(checks=50) # or pass empty dictionary
+	flann = cv2.FlannBasedMatcher(index_params,search_params)
+	matches = flann.knnMatch(des1,des2,k=2)
+	# Need to draw only good matches, so create a mask
+	matchesMask = [[0,0] for i in range(len(matches))]
+	# ratio test as per Lowe's paper
+	for i,(m,n) in enumerate(matches):
+		if m.distance < 0.7*n.distance:
+			matchesMask[i] = [1,0]
+	draw_params = dict(matchColor = (0,255,0),
+	singlePointColor = (255,0,0),
+	matchesMask = matchesMask,
+	flags = cv2.DrawMatchesFlags_DEFAULT)
+	img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,matches,None,**draw_params)
+	plt.imshow(img3,),plt.show()
 
 def loadImageFeatureMap():
-	ap = argparse.Arguementparser()
-	ap.add_arguement("-i", "--image1", required=True, help="Path to Image" )
-	ap.add_arguement("-i", "--image2", required=True, help="Path to Image" )
-	args = vars(ap.parse_args())
-	image1 = cv2.imread(args["image1"], cv2.IMREAD_GRAYSCALE)
-	image2 = cv2.imread(args["image2"], cv2.IMREAD_GRAYSCALE)
 
-	featureMapping(image1, image2)
+	ap = argparse.ArgumentParser()
+	ap.add_argument("-image1", "--i1", required=True, help="Path to Image" )
+	ap.add_argument("-image2", "--i2", required=True, help="Path to Image" )
+	args = vars(ap.parse_args())
+
+	i1 = cv2.imread(args["image1"], cv2.IMREAD_GRAYSCALE)
+	im1Path = args["i1"]
+	i1 = checkPNG(i1, im1Path)
+
+	i2 = cv2.imread(args["image2"], cv2.IMREAD_GRAYSCALE)
+	im2Path = args["i2"]
+	i2 = checkPNG(i2, im2Path)
+
+	return i1, i2
 	
 
 
@@ -190,10 +235,12 @@ def confidenceFactor():
 
 
 def main():
-
-	image, im2 = loadImage()
+	
+	image, im2, im3, im4 = loadImage()
 	image = imutils.resize(image, height=700)
 	im2 = imutils.resize(im2, height=700)
+	im3 = imutils.resize(im3, height=700)
+	im4 = imutils.resize(im4, height=700)
 
 	boxCoords = detectEdge(image)
 	cv2.waitKey(0)
@@ -211,6 +258,17 @@ def main():
 	cv2.imwrite("./output/swappedPlates.png", swappedPlates)
 
 	cv2.waitKey(0)
+
+	
+
+	siftMatching(im3, im4)
+
+	cv2.waitkey(0)
+
+
+	
+
+
 
 
 main()
