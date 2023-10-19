@@ -158,9 +158,14 @@ def swapPlates(image, im2, boxCoords, boxCoords2):
 
 	return image
 
-def featureMapping(image1, image2):
+def featureMapping(img1, img2) -> None:
+	"""
+	Note: Deprecated
+	Description: Feature mapping via the patented SURF function
+	Parameters: Two images to match
+	Returns: None
+	"""
 
-	
 	#-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
 	minHessian = 400
 	detector = cv2.xfeatures2d_SURF.create(hessianThreshold=minHessian)
@@ -177,13 +182,18 @@ def featureMapping(image1, image2):
  		if m.distance < ratio_thresh * n.distance:
  			good_matches.append(m)
 	#-- Draw matches
-
+	
 	img_matches = np.empty((max(img1.shape[0], img2.shape[0]), img1.shape[1]+img2.shape[1], 3), dtype=np.uint8)
 	cv2.drawMatches(img1, keypoints1, img2, keypoints2, good_matches, img_matches, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 	#-- Show detected matches
 	cv2.imshow('Good Matches', img_matches)
 
-def siftMatching(img1, img2):
+def siftMatching(img1, img2) -> None:
+	"""
+	Description: Feature mapping via the (not deprecated) SIFT function
+	Parameters: Two images to match to each other
+	Returns: None
+	"""
 	# Initiate SIFT detector
 	sift = cv2.SIFT_create()
 	# find the keypoints and descriptors with SIFT
@@ -259,15 +269,7 @@ def main():
 
 	cv2.waitKey(0)
 
-	
-
 	siftMatching(im3, im4)
-
-	cv2.waitkey(0)
-
-
-	
-
 
 
 
