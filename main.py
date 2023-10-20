@@ -87,7 +87,7 @@ def detectEdge(image) -> None:
 
 	# convert to high-contrast black and white
 	blackhat = cv2.morphologyEx(gray, cv2.MORPH_BLACKHAT, rectKernel)
-	# cv2.imshow("blackhat", blackhat)
+	cv2.imshow("blackhat", blackhat)
 
 	# compute gradient magnitude
 	gradX = cv2.Sobel(blackhat, ddepth=cv2.CV_32F, dx=1, dy=0, ksize=-1)
@@ -107,7 +107,8 @@ def detectEdge(image) -> None:
 
 	(cnts, _) = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 	cv2.drawContours(thresh, cnts, -1, (0, 255, 0), 2)
-	# cv2.imshow("Threshheld", thresh)
+	cv2.imshow("Threshheld", thresh)
+	cv2.waitKey(0)
 
 	# sort thresholds by size
 	cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
@@ -118,6 +119,7 @@ def detectEdge(image) -> None:
 	# box = image.copy()
 	cv2.rectangle(image, (x - 10, y - 10), (x + w + 10, y + h + 10), (0, 255, 0), 2)
 	cv2.imshow("Identified", image)
+	cv2.waitKey(0)
 
 	cv2.imshow("Plate", box)
 
@@ -181,8 +183,8 @@ def featureMapping(img1, img2) -> None:
 	for m,n in knn_matches:
  		if m.distance < ratio_thresh * n.distance:
  			good_matches.append(m)
-	#-- Draw matches
 	
+	# Draw matches
 	img_matches = np.empty((max(img1.shape[0], img2.shape[0]), img1.shape[1]+img2.shape[1], 3), dtype=np.uint8)
 	cv2.drawMatches(img1, keypoints1, img2, keypoints2, good_matches, img_matches, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 	#-- Show detected matches
@@ -252,12 +254,19 @@ def main():
 	im3 = imutils.resize(im3, height=700)
 	im4 = imutils.resize(im4, height=700)
 
+	cv2.imshow("Original", image)
+	cv2.waitKey(0)
+
 	boxCoords = detectEdge(image)
+	cv2.waitKey(0)
+	cv2.destroyAllWindows()
+
+	cv2.imshow("Original", im2)
 	cv2.waitKey(0)
 
 	boxCoords2 = detectEdge(im2)
-
 	cv2.waitKey(0)
+	cv2.destroyAllWindows()
 
 	blurred = blurImage(image, boxCoords)
 	cv2.imwrite("./output/blurredPlate.png", blurred)
@@ -268,6 +277,7 @@ def main():
 	cv2.imwrite("./output/swappedPlates.png", swappedPlates)
 
 	cv2.waitKey(0)
+	cv2.destroyAllWindows()
 
 	siftMatching(im3, im4)
 
